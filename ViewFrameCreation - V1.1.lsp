@@ -656,19 +656,26 @@ When we define an object reactor, we must identify the entity the reactor is to 
 (defun C:TestViewFrames()
 
   (command "_undo" "_m")
-	   
-  (setq pln (car (entsel)))
 
-  ;|
-  (command "explode" pln "" ) (setq pln (entlast))
+  
+  (setq Alignement (car (entsel "\nSelect an Alignement")))
+  (while (/= (cdr (assoc 0 (entget Alignement))) "AECC_ALIGNMENT" )
+    (princ)
+    (princ "selected element is not a civil 3D Alignement")
+    (setq Alignement (car (entsel "Select an Alignement")))
+    )
 
-  (setq explodedObjects (vlax-variant-value (vla-Explode (vlax-ename->vla-object pln))))
+
+  (command "copy" Alignement "" '(0 0) '(0 0) )
+  (command "explode" Alignement "" ) (setq BlockAlignement (entlast))
+
+  (setq explodedObjects (vlax-variant-value (vla-Explode (vlax-ename->vla-object BlockAlignement))))
   (setq explodedObjects2 (mapcar '(lambda(x) (vlax-vla-object->ename x)) (vlax-safearray->list explodedObjects)))
   (setq explodedObjects3 (ListToSS explodedObjects2))
 
   (command  "_.pedit" "_multiple" explodedObjects3 "" "y"  "_join" "" "")
   (setq pln (entlast))
-  |;
+
 
  
   (setq P0i (vlax-curve-getStartPoint (vlax-ename->vla-object pln)))
